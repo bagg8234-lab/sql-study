@@ -45,3 +45,20 @@ WHERE p.price = (
     FROM shopping_mall.products p2
     WHERE p2.category_id = p.category_id
 );
+
+
+-- 윈도우 함수-----------------------------------------
+-- 미션 1. 각 상품의 가격이 카테고리 내에서 몇 위인지 순위를 매기세요.
+select category_name, product_name, price, rank() over (partition by c.category_name order by price desc) as "순위"
+from shopping_mall.categories c join shopping_mall.products p on p.category_id=c.category_id;
+
+-- 미션 2. 주문을 날짜순으로 정렬했을 때, 이전 주문 금액과 현재 주문 금액을 나란히 보여주세요.
+select order_id, order_date, total_amount, lag(total_amount) over(order by order_date) as "이전 주문 금액" from shopping_mall.orders order by order_date;
+
+-- 미션 3. 카테고리별 상품 가격의 누적 합계를 가격 오름차순으로 구하세요.
+select category_name, product_name, price,sum(price) over(partition by category_name order by price) as"누적 합계" from shopping_mall.categories c
+join shopping_mall.products p on c.category_id=p.category_id;
+
+-- 미션 4. 회원별 주문을 날짜순으로 정렬하고, 다음 주문 날짜를 옆에 붙여주세요.
+select name, order_date, lead(order_date) over(partition by name order by order_date) as "다음 주문 날짜" 
+from shopping_mall.orders o join shopping_mall.users u on o.user_id=u.user_id;
