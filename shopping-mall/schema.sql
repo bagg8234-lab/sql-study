@@ -1,4 +1,9 @@
-CREATE DATABASE shopping_mall;
+-- =============================================
+-- 쇼핑몰 토이프로젝트 - 테이블 생성
+-- DB: MySQL 8.0
+-- =============================================
+
+CREATE DATABASE IF NOT EXISTS shopping_mall;
 USE shopping_mall;
 
 CREATE TABLE users (
