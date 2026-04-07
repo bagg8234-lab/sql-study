@@ -47,7 +47,7 @@ WHERE p.price = (
 );
 
 
--- 윈도우 함수-----------------------------------------
+------ 윈도우 함수-----------------------------------------
 -- 미션 1. 각 상품의 가격이 카테고리 내에서 몇 위인지 순위를 매기세요.
 select category_name, product_name, price, rank() over (partition by c.category_name order by price desc) as "순위"
 from shopping_mall.categories c join shopping_mall.products p on p.category_id=c.category_id;
@@ -62,3 +62,41 @@ join shopping_mall.products p on c.category_id=p.category_id;
 -- 미션 4. 회원별 주문을 날짜순으로 정렬하고, 다음 주문 날짜를 옆에 붙여주세요.
 select name, order_date, lead(order_date) over(partition by name order by order_date) as "다음 주문 날짜" 
 from shopping_mall.orders o join shopping_mall.users u on o.user_id=u.user_id;
+
+-------CTE------------------------------------------------------------------------------------------------------
+-- 미션 1. 회원별 총 구매금액을 CTE로 만들고, 총 구매금액이 10만원 이상인 회원만 조회하세요.
+with 회원별_총구매금액 as(
+	select user_id, sum(total_amount) "구매금액"
+    from shopping_mall.orders
+    group by user_id
+)
+select * from 회원별_총구매금액
+where 구매금액 >= 100000;
+
+-- 미션 2. 상품별 평균 평점을 CTE로 만들고, 평점이 전체 평균보다 높은 상품만 조회하세요.
+with 평균_평점 as(
+select product_id, avg(rating) as rating
+from shopping_mall.reviews
+group by product_id
+)
+select * from 평균_평점 where rating > (select avg(rating) from 평균_평점);
+
+-- 미션 3. CTE 두 개를 이어서 써보세요.
+-- 첫 번째 CTE: 회원별 총 구매금액
+-- 두 번째 CTE: 상품별 총 판매수량
+-- 최종: 두 CTE를 각각 조회해서 한 번에 출력하세요. (힌트: UNION ALL)
+with 회원별_총_구매금액 as(
+select user_id, sum(total_amount) total_amount
+from shopping_mall.orders
+group by user_id
+),
+상품별_총_판매수량 as(
+select product_id, sum(quantity) total_quantity
+from shopping_mall.order_items
+group by product_id
+)
+select '상품' as 구분, product_id as id, total_quantity as 수량_또는_금액
+from 상품별_총_판매수량
+union all
+select '회원' as 구분, user_id, total_amount
+from 회원별_총_구매금액;
